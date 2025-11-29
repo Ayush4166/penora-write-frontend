@@ -41,26 +41,28 @@ function AuthForm({ onAuth }) {
   };
 
   const handleGoogleSuccess = async (credentialResponse) => {
-    setLoading(true);
-    setError("");
-    try {
-      const res = await fetch(`${API_URL}/google-login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ credential: credentialResponse.credential })
-      });
-      const data = await res.json();
-      if (res.ok && data.access_token) {
-        // Google: always use backend's email field
-        onAuth(data.access_token, data.username || "", data.email || "");
-      } else {
-        setError(data.detail || "Google login failed");
-      }
-    } catch (err) {
-      setError("Google login error: " + err.message);
+  setLoading(true);
+  setError("");
+  try {
+    const res = await fetch(`${API_URL}/google-login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ credential: credentialResponse.credential }),
+    });
+    const data = await res.json();
+
+    if (res.ok && data.access_token) {
+      // Save token like normal login
+      localStorage.setItem("token", data.access_token);
+      onAuth(data.access_token, data.username || "", data.email || "");
+    } else {
+      setError(data.detail || "Google login failed");
     }
-    setLoading(false);
-  };
+  } catch (err) {
+    setError("Google login error: " + err.message);
+  }
+  setLoading(false);
+};
 
   const handleGoogleError = () => {
     setError("Google login failed");
